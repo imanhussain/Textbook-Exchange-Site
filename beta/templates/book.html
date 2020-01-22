@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<div class="profile">
+    <div class="flex-container">
+        <div>
+            <div id="profile-pic">
+                <img src="{{url_for('bookPic', bid=book['id'])}}" alt="{{book['pic']}}" id="thumbnail">
+            </div> 
+        </div>
+    
+        <div class="profile-header">
+            <h1>{{book['title']}}</h1>
+            <p>{{course['department']}} {{course['number']}}</p>    
+        </div>
+    </div>
+</div>
+
+{% if seller != loggedInUser %}
+<p>By {{book['author']}}</p>
+<p>Price: ${{book['price']}}</p>
+<p>Professor: {{book['professor']}}</p>
+<p>Year used: {{book['year']}}</p>
+{% endif %}
+
+{% if loggedInUser == seller %} 
+<form method=POST action=" {{ url_for('update', id=book['id'])}}">
+    <table id="edit">
+        <tr>
+            <td><label for="book-author">Author</label></td>
+            <td><input id="book-author" name='book-author' value="{{book['author']}}"></td> 
+        </tr>
+        <tr>
+            <td><label for="book-price">Price</label></td>
+            <td><input id="book-price" name='book-price' value="{{book['price']}}"></td> 
+        </tr>
+        <tr>
+            <td><label for="book-professor">Professor</label></td>
+            <td><input id="book-professor" name='book-professor' value="{{book['professor']}}"></td> 
+        </tr>
+        <tr>
+            <td><label for="book-year">Year Used</label></td>
+            <td><input id="book-year" name='book-year' value="{{book['year']}}"></td> 
+        </tr>
+    </table>
+    <div>
+        <input type="submit" name="submit" value="update">
+    </div>
+</form>
+{% endif %}   
+
+{% if book['sold_status'] == 0 %}
+    <p><label>Status: </label><span id="sold_status"> Available </span></p>
+{% else %}
+<p><label>Status: </label><span id="sold_status"> Sold </span></p>
+{% endif %}
+<p>Condition: {{condition}}</p>
+<p>Seller: <a href="{{url_for('user', username=seller)}}">{{seller}}</a></p>
+
+{% if loggedInUser == seller %}  
+
+<form id="soldStatus">
+    <label for="soldStat">Mark as Sold</label>
+    {% if book['sold_status'] == 1 %}
+        <input id="soldStat" type="checkbox" name="markAsSold" value="{{book['id']}}" checked>   
+    {% else %}
+        <input id="soldStat" type="checkbox" name="markAsSold" value="{{book['id']}}">   
+    {% endif %}  
+</form>
+
+<form method="POST" action="{{url_for('delete')}}">
+    <input type="hidden" name="bookid" value="{{book['id']}}">
+    <input type="submit" name="submit" value="Delete Book">
+</form>
+
+{% elif book['sold_status'] == 0 %}    
+    <form method="POST" action="{{url_for('addCart')}}">
+        <input type="hidden" name="bookid" value="{{book['id']}}">
+        <input type="submit" name="submit" value="Add to Cart">
+    </form>
+{% endif %}  
+
+{% if seller != loggedInUser %}
+    <h4>Contact Seller</h4>
+    <form method="POST" action="{{url_for('send_mail')}}">
+    <table id="contact">
+        <p> Recipient: {{email}} </p>
+        <tr><td><label for="subject">Subject:</td>
+            <td><input type="text" id="subject" name="subject" size="50"></td></tr>
+        <tr><td colspan="2"><label for="body">Email:</td></tr>
+        <tr><td colspan="2"><textarea rows=10 cols=60 id="body" name="body"></textarea></td></tr>
+    </table>
+        <input type="hidden" name="userEmail" value="{{email}}">
+        <input type="submit" name="submit" value="Send Email">
+    </form>
+{% endif %}
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+    var URL = "{{url_for('updateSoldStatusAjax')}}"
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
+
+{% endblock %}

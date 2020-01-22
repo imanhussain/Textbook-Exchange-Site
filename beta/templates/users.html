@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block main_content %}
+
+<div class="profile">
+    <form method="POST" action="{{url_for('editProfile', username=username)}}" enctype="multipart/form-data">
+    <div class="flex-container">
+        <div>
+            <div id="profile-pic">
+                <img src="{{url_for('profilePic', username=username)}}" alt="{{username}}" id="thumbnail">
+            </div> 
+            {% if loggedInUser == username %} 
+                <label for="profilePic">Upload photo:</label>
+                <input type="file" name="profilepic" accept="image/png, image/jpeg" id="profilePic">
+            {% endif %}
+        </div>
+    
+        <div class="profile-header">
+            <h1>{{user['name']}}</h1>
+            <p>Email: {{username+'@wellesley.edu'}}</p>
+            {% if loggedInUser == username %}
+                <textarea cols="35" rows="5" name="userBio" aria-label="bio">{{user['bio']}}</textarea>
+            {% elif user['bio'] %}
+                <p id="bio">{{user['bio']}}</p>
+            {% endif %}        
+        </div>
+
+    </div>
+    {% if loggedInUser == username %} 
+        <p> Click below after uploading a photo or editing your bio:</p>
+        <button id="editprofile">Edit Profile</button></form>
+    {% endif %}
+</div>
+
+<h4>Selling: </h4>
+<ul>
+    {% for book in selling %}
+    <li class="booklist">
+        <a href="{{url_for('book', id=book['id'])}}">{{book['title']}}</a>
+        {% if loggedInUser == username %} 
+            <span>
+                <form id="soldStatus"> 
+                    {% if book['sold_status'] == 1 %}
+                        <label for="{{book['id']}}">Mark as Sold</label>
+                        <input id="{{book['id']}}" type="checkbox" name="markAsSold" value="{{book['id']}}" checked>
+                        {% else %}
+                        <label for="{{book['id']}}">Mark as Sold</label>
+                        <input id="{{book['id']}}" type="checkbox" name="markAsSold" value="{{book['id']}}">
+                    {% endif %}  
+                </form> 
+            </span>
+        {% endif %}       
+    </li>
+{% endfor %}
+</ul>
+
+
+
+{% if loggedInUser != username %}    
+    <h4>Contact Me</h4>
+    <form method="POST" action="/send_mail/">
+    <table id="contact">
+        <tr><td><label for="subject">Subject:</td>
+            <td><input type="text" id="subject" name="subject" size="50"></td></tr>
+        <tr><td colspan="2"><label for="body">Email:</td></tr>
+        <tr><td colspan="2"><textarea rows=10 cols=60 id="body" name="body"></textarea></td></tr>
+    </table>
+        <input type="hidden" name="userEmail" value="{{username+'@wellesley.edu'}}">
+        <input type="submit" name="submit" value="Send Email">
+    </form>
+{% endif %}
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script>
+    var URL = "{{url_for('updateSoldStatusAjax')}}"
+</script>
+<script src="{{url_for('static',filename='eventHandlers.js')}}"></script>
+
+{% endblock %}
+
+</html>
